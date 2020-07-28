@@ -1,5 +1,5 @@
 # up-api.js
-An (incomplete) implementation of the Up Banking API in JavaScript.
+An (incomplete) implementation of the [Up Banking API](https://developer.up.com.au) in JavaScript.
 
 ## Contributions
 Feel free to contribute to this project. This is the first time I've ever written something like this so it's very rough around the edges and probably breaks many different conventions. 
