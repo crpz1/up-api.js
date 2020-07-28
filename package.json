@@ -1,0 +1,19 @@
+{
+  "name": "up-api",
+  "version": "0.1.0",
+  "description": "An (incomplete) implementation of the Up Banking API in JavaScript.",
+  "main": "upApi.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/creeperzedge/up-api.js.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/creeperzedge/up-api.js/issues"
+  },
+  "homepage": "https://github.com/creeperzedge/up-api.js#readme"
+}
