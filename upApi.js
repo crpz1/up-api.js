@@ -7,8 +7,13 @@ async function makeRequest(endpoint, key) {
                 "Authorization": `Bearer ${key}`
             }
         }).then(async res => {
-            if (!res.ok) throw Error;
-            res.json().then(json => resolve(json));
+            if (!res.ok) {
+                res.json().then(err => {
+                    reject(err.errors[0].detail);
+                });
+            } else {
+                res.json().then(json => resolve(json));
+            }
         });
     });
 }
