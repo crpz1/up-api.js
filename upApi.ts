@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 class RESTClient {
     #key: string;
 
-    constructor(token) {
+    constructor(token: string) {
         this.#key = token;
     }
 
