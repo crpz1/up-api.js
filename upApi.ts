@@ -1,21 +1,29 @@
 import fetch from 'node-fetch';
 
-function makeRequest(endpoint: string, key: string) {
-    return new Promise<any>((resolve, reject) => {
-        fetch(`https://api.up.com.au/api/v1/${endpoint}`, {
-            headers: {
-                "Authorization": `Bearer ${key}`
-            }
-        }).then(res => {
-            if (!res.ok) {
-                res.json().then(err => {
-                    reject(err.errors[0].detail);
-                });
-            } else {
-                res.json().then(json => resolve(json));
-            }
+class RESTClient {
+    #key: string;
+
+    constructor(token) {
+        this.#key = token;
+    }
+
+    makeRequest(endpoint: string) {
+        return new Promise<any>((resolve, reject) => {
+            fetch(`https://api.up.com.au/api/v1/${endpoint}`, {
+                headers: {
+                    "Authorization": `Bearer ${this.#key}`
+                }
+            }).then(res => {
+                if (!res.ok) {
+                    res.json().then(err => {
+                        reject(err.errors[0].detail);
+                    });
+                } else {
+                    res.json().then(json => resolve(json));
+                }
+            });
         });
-    });
+    }
 }
 
 class Account {
@@ -25,14 +33,28 @@ class Account {
     accountType: string;
     createdAt: string;
     balance: Money;
+    #restClient?: RESTClient;
 
-    constructor(data) {
+    constructor(data: any, client: RESTClient) {
         this.id = data.id;
         this.type = data.type;
         this.displayName = data.attributes.displayName;
         this.accountType = data.attributes.accountType;
         this.createdAt = data.createdAt;
         this.balance = new Money(data.attributes.balance);
+        this.#restClient = client;
+    }
+
+    getTransactions() {
+        return new Promise<Transaction[]>((resolve, reject) => {
+            let out = [];
+            this.#restClient.makeRequest(`accounts/${this.id}/transactions`).then(res => {
+                res.data.forEach(elem => {
+                    out.push(new Transaction(elem));
+                }).catch(err => reject(err));;
+                resolve(out);
+            });
+        });
     }
 };
 
@@ -45,7 +67,7 @@ class Transaction {
     amount: Money;
     foreignAmount?: Money;
 
-    constructor(data) {
+    constructor(data: any) {
         this.id = data.id;
         this.status = data.attributes.status;
         this.rawText = data.attributes.rawText;
@@ -60,7 +82,7 @@ class Money {
     currencyCode: string;
     value: number;
     
-    constructor(data) {
+    constructor(data: any) {
         this.currencyCode = data.currencyCode;
         this.value = data.value;
     }
@@ -71,49 +93,49 @@ module.exports.Money = Money;
 module.exports.Transaction = Transaction;
 
 module.exports.Client = class Client {
-    key: string;
+    #restClient: RESTClient;
 
-    constructor(apiKey) {
-        this.key = apiKey;
+    constructor(apiKey: string) {
+        this.#restClient = new RESTClient(apiKey);
     }
 
     getAccounts() {
         return new Promise<Account[]>((resolve, reject) => {
             let out = [];
-            makeRequest("accounts", this.key).then(res => {
+            this.#restClient.makeRequest("accounts").then(res => {
                 res.data.forEach(elem => {
-                    out.push(new Account(elem));
-                });
+                    out.push(new Account(elem, this.#restClient));
+                }).catch(err => reject(err));
                 resolve(out);
             });
         });
     }
 
-    getAccountByID(id) {
+    getAccountByID(id: string) {
         return new Promise<Account>((resolve, reject) => {
-            makeRequest(`accounts/${id}`, this.key).then(res => {
-                resolve(new Account(res.data));
-            });
+            this.#restClient.makeRequest(`accounts/${id}`).then(res => {
+                resolve(new Account(res.data, this.#restClient));
+            }).catch(err => reject(err));;
         });
     }
 
     getTransactions() {
         return new Promise<Transaction[]>((resolve, reject) => {
             let out = [];
-            makeRequest("transactions", this.key).then(res => {
+            this.#restClient.makeRequest("transactions").then(res => {
                 res.data.forEach(elem => {
                     out.push(new Transaction(elem));
-                });
+                }).catch(err => reject(err));;
                 resolve(out);
             });
         });
     }
 
-    getTransactionByID(id) {
+    getTransactionByID(id: string) {
         return new Promise<Transaction>((resolve, reject) => {
-            makeRequest(`transactions/${id}`, this.key).then(res => {
+            this.#restClient.makeRequest(`transactions/${id}`).then(res => {
                 resolve(new Transaction(res.data));
-            });
+            }).catch(err => reject(err));;
         });
     }
 };
