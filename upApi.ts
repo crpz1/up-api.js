@@ -26,7 +26,7 @@ class RESTClient {
     }
 }
 
-class Account {
+export class Account {
     id: string;
     type: string;
     displayName: string;
@@ -58,7 +58,7 @@ class Account {
     }
 };
 
-class Transaction {
+export class Transaction {
     id: string;
     status: string;
     rawText: string;
@@ -78,7 +78,7 @@ class Transaction {
     }
 };
 
-class Money {
+export class Money {
     currencyCode: string;
     value: number;
     
@@ -88,11 +88,7 @@ class Money {
     }
 };
 
-module.exports.Account = Account;
-module.exports.Money = Money;
-module.exports.Transaction = Transaction;
-
-module.exports.Client = class Client {
+export class Client {
     #restClient: RESTClient;
 
     constructor(apiKey: string) {
